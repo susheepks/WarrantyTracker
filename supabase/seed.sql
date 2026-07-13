@@ -1,0 +1,16 @@
+insert into maintenance_templates (category, task_name, frequency_days) values
+('Fryer', 'Boil out fryer and replace oil', 7),
+('Fryer', 'Clean fryer exterior', 1),
+('Fryer', 'Inspect pilot light and burner', 30),
+('Walk-In Cooler', 'Clean condenser coils', 30),
+('Walk-In Cooler', 'Check door gaskets for tears', 7),
+('Walk-In Cooler', 'Verify temperature gauge accuracy', 30),
+('HVAC', 'Replace air filter', 30),
+('HVAC', 'Clean return air grilles', 14),
+('Ice Machine', 'Sanitize ice bin', 30),
+('Ice Machine', 'Clean air filter', 14),
+('Ice Machine', 'Descale and sanitize internal components', 180),
+('Dishwasher', 'Clean wash and rinse arms', 7),
+('Dishwasher', 'Delime interior', 30),
+('Oven', 'Calibrate thermostat', 90),
+('Oven', 'Clean oven interior and racks', 7);
