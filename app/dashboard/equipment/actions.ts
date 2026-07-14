@@ -13,7 +13,7 @@ export async function extractEquipmentData(formData: FormData) {
     const base64Data = Buffer.from(arrayBuffer).toString('base64')
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
     const prompt = `
       Analyze this photo of an equipment/appliance manufacturer sticker or nameplate.
@@ -35,15 +35,16 @@ export async function extractEquipmentData(formData: FormData) {
 
     const result = await model.generateContent([prompt, imagePart])
     const response = await result.response
-    let text = response.text().trim()
+    const text = response.text().trim()
     
-    // Clean up possible markdown
-    if (text.startsWith('\`\`\`json')) text = text.replace('\`\`\`json', '')
-    if (text.startsWith('\`\`\`')) text = text.replace('\`\`\`', '')
-    if (text.endsWith('\`\`\`')) text = text.replace(/\`\`\`$/, '')
-    text = text.trim()
-
-    return { data: JSON.parse(text) }
+    // Extract JSON block using regex to handle conversational filler
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      return { data: JSON.parse(jsonMatch[0]) }
+    } else {
+      console.error("Gemini Extraction Error: No JSON found. Raw text:", text)
+      return { error: 'No JSON found in response' }
+    }
   } catch (error) {
     console.error("Gemini Extraction Error:", error)
     return { error: 'Failed to extract data from image' }

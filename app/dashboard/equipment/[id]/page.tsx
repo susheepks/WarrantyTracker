@@ -24,6 +24,14 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
     redirect('/dashboard/equipment')
   }
 
+  const handleStartClaim = async () => {
+    'use server'
+    const { startClaim } = await import('../../claims/actions')
+    await startClaim(resolvedParams.id)
+  }
+
+  const isUnderWarranty = equipment.warranty_end_date && new Date(equipment.warranty_end_date) >= new Date()
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6 flex justify-between items-start">
@@ -35,6 +43,13 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
           <p className="text-gray-500 mt-1">{equipment.category || 'Uncategorized'}</p>
         </div>
         <div className="flex items-center gap-2">
+          {isUnderWarranty && (
+            <form action={handleStartClaim}>
+              <button className="flex items-center gap-1 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors text-sm font-medium">
+                Start Warranty Claim
+              </button>
+            </form>
+          )}
           <form action={deleteEquipment}>
             <button className="flex items-center gap-1 px-3 py-2 text-red-600 border border-red-200 bg-red-50 rounded-md hover:bg-red-100 transition-colors text-sm font-medium">
               <Trash2 size={16} /> Delete

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, CheckSquare, Square } from 'lucide-react'
-import { createEquipment } from '../actions'
+import { ArrowLeft, CheckSquare, Square, Camera, Loader2 } from 'lucide-react'
+import { createEquipment, extractEquipmentData } from '../actions'
 
 type Template = {
   id: string
@@ -16,6 +16,12 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
   const [category, setCategory] = useState('')
   const [suggestedTasks, setSuggestedTasks] = useState<Template[]>([])
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set())
+  const [isExtracting, setIsExtracting] = useState(false)
+
+  const nameRef = useRef<HTMLInputElement>(null)
+  const modelRef = useRef<HTMLInputElement>(null)
+  const serialRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Categories present in templates
   const uniqueCategories = Array.from(new Set(templates.map(t => t.category)))
@@ -38,20 +44,67 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
     setSelectedTaskIds(next)
   }
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsExtracting(true)
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const result = await extractEquipmentData(formData)
+      if (result?.data) {
+        if (nameRef.current && result.data.name) nameRef.current.value = result.data.name
+        if (modelRef.current && result.data.model) modelRef.current.value = result.data.model
+        if (serialRef.current && result.data.serial_number) serialRef.current.value = result.data.serial_number
+      } else {
+        alert('Could not extract details. Please enter manually.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Error extracting details. Please enter manually.')
+    } finally {
+      setIsExtracting(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   return (
     <div className="max-w-2xl mx-auto pb-12">
       <div className="mb-6">
         <Link href="/dashboard/equipment" className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4">
           <ArrowLeft size={16} /> Back to Equipment
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Add Equipment</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">Add Equipment</h1>
+          
+          <div>
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handlePhotoUpload} 
+            />
+            <button 
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isExtracting}
+              className="flex items-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-md hover:bg-indigo-100 transition-colors text-sm font-medium disabled:opacity-50"
+            >
+              {isExtracting ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
+              {isExtracting ? 'Analyzing...' : 'Scan Nameplate Photo'}
+            </button>
+          </div>
+        </div>
       </div>
 
-      <form action={createEquipment} className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+      <form action={createEquipment} className="bg-white border border-gray-200 rounded-lg p-6 space-y-6 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="col-span-full">
             <label className="block text-sm font-medium text-gray-700 mb-1">Equipment Name *</label>
-            <input name="name" required className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. Commercial Fryer" />
+            <input ref={nameRef} name="name" required className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. Commercial Fryer" />
           </div>
           
           <div>
@@ -71,12 +124,12 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
-            <input name="model" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. TF-50" />
+            <input ref={modelRef} name="model" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. TF-50" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
-            <input name="serial_number" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" />
+            <input ref={serialRef} name="serial_number" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" />
           </div>
 
           <div>

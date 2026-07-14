@@ -51,6 +51,9 @@ export default async function DashboardLayout({
                 <Link href="/dashboard/equipment" className="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
                   Equipment
                 </Link>
+                <Link href="/dashboard/claims" className="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                  Claims
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">
