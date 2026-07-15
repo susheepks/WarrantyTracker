@@ -148,13 +148,21 @@ export async function markMaintenanceComplete(scheduleId: string, frequencyDays:
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
+  // Fetch current schedule to get next_due_date
+  const { data: schedule } = await supabaseAdmin
+    .from('maintenance_schedules')
+    .select('next_due_date')
+    .eq('id', scheduleId)
+    .single()
+
   // Create log
   const { error: logError } = await supabaseAdmin
     .from('maintenance_logs')
     .insert({
       schedule_id: scheduleId,
       completed_by: user.id,
-      status: 'completed'
+      status: 'completed',
+      was_due_date: schedule?.next_due_date || null
     })
 
   if (logError) {

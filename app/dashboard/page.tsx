@@ -38,11 +38,71 @@ export default async function DashboardPage() {
     revalidatePath('/dashboard')
   }
 
+  // Fetch Protected Value and Health Score
+  const { data: equipmentStats } = await supabase
+    .from('equipment')
+    .select('price, warranty_end_date')
+    .eq('business_id', profile.business_id)
+    .not('price', 'is', null)
+
+  let protectedValue = 0
+  let expiredValue = 0
+
+  if (equipmentStats) {
+    equipmentStats.forEach(eq => {
+      if (eq.warranty_end_date && new Date(eq.warranty_end_date) >= today) {
+        protectedValue += eq.price || 0
+      } else {
+        expiredValue += eq.price || 0
+      }
+    })
+  }
+
+  // Use the new equipment_health view, fallback gracefully if the view doesn't exist yet
+  const { data: healthStats, error: healthError } = await supabase
+    .from('equipment_health')
+    .select('health_score')
+    .eq('business_id', profile.business_id)
+
+  let averageHealth = 100
+  if (!healthError && healthStats && healthStats.length > 0) {
+    const totalHealth = healthStats.reduce((sum, item) => sum + (item.health_score || 0), 0)
+    averageHealth = Math.round(totalHealth / healthStats.length)
+  }
+
   return (
     <div className="max-w-4xl mx-auto pb-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Welcome back to {profile.businesses?.name}</p>
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-500 mt-1">Welcome back to {profile.businesses?.name}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Business Health Score</h3>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-3xl font-bold ${averageHealth >= 80 ? 'text-green-600' : averageHealth >= 50 ? 'text-amber-500' : 'text-red-600'}`}>
+              {averageHealth}%
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">On-time maintenance (30 days)</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Protected Value</h3>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-gray-900">${protectedValue.toLocaleString()}</span>
+          </div>
+          <p className="text-xs text-green-600 font-medium mt-2">Currently under warranty</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm sm:col-span-2 lg:col-span-1">
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Unprotected Value</h3>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-gray-900">${expiredValue.toLocaleString()}</span>
+          </div>
+          <p className="text-xs text-amber-600 font-medium mt-2">Consider service plans</p>
+        </div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">

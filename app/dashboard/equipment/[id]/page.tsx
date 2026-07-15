@@ -17,6 +17,17 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
     return redirect('/dashboard/equipment')
   }
 
+  const { data: healthData } = await supabase
+    .from('equipment_health')
+    .select('health_score')
+    .eq('equipment_id', resolvedParams.id)
+    .single()
+
+  const healthScore = healthData?.health_score ?? 100
+  let badgeColor = 'bg-green-100 text-green-800 border-green-200'
+  if (healthScore < 80) badgeColor = 'bg-amber-100 text-amber-800 border-amber-200'
+  if (healthScore < 50) badgeColor = 'bg-red-100 text-red-800 border-red-200'
+
   const deleteEquipment = async () => {
     'use server'
     const supabase = await createClient()
@@ -39,10 +50,21 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
           <Link href="/dashboard/equipment" className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4">
             <ArrowLeft size={16} /> Back to Equipment
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">{equipment.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900">{equipment.name}</h1>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badgeColor}`}>
+              {Math.round(healthScore)}% Health
+            </span>
+          </div>
           <p className="text-gray-500 mt-1">{equipment.category || 'Uncategorized'}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Link 
+            href={`/dashboard/equipment/${resolvedParams.id}/card`}
+            className="flex items-center gap-1 px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors text-sm font-medium"
+          >
+            View Emergency Card
+          </Link>
           {isUnderWarranty && (
             <form action={handleStartClaim}>
               <button className="flex items-center gap-1 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors text-sm font-medium">
