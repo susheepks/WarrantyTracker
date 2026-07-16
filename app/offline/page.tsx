@@ -1,5 +1,6 @@
-import { WifiOff } from 'lucide-react'
+"use client"
 
+import { WifiOff } from 'lucide-react'
 export default function OfflinePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-50 text-slate-900">

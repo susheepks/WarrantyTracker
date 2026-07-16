@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { revalidatePath } from 'next/cache'
+import { Resend } from 'resend'
 
 export async function startClaim(equipmentId: string) {
   const supabase = await createClient()
@@ -104,6 +105,25 @@ export async function submitClaim(formData: FormData) {
   const claimId = formData.get('claim_id') as string
   const draftText = formData.get('draft_text') as string
   
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const carecenterEmail = process.env.CARECENTER_EMAIL || 'carecenter@example.com'
+    const { error } = await resend.emails.send({
+      from: 'EquipTracker Claims <onboarding@resend.dev>',
+      to: [carecenterEmail],
+      subject: `New Warranty Claim Submission - ID: ${claimId}`,
+      text: draftText,
+    })
+    
+    if (error) {
+      console.error('Failed to send claim email via Resend:', error)
+    } else {
+      console.log(`Claim email sent successfully for claim ${claimId}`)
+    }
+  } catch (err) {
+    console.error('Failed to send claim email:', err)
+  }
+
   const supabase = await createClient()
   await supabase
     .from('claims')

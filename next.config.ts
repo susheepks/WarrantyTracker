@@ -3,6 +3,7 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  turbopack: {},
 };
 
 const withPWA = withPWAInit({
