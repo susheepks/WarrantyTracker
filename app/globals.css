@@ -6,21 +6,39 @@
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: #1E2126;
+  --color-steel: #6B7280;
+  --color-steel-light: #E7E8E6;
+  --color-surface: #FAFAF9;
+  --color-card: #FFFFFF;
+  --color-amber: #E8A33D;
+  --color-amber-dark: #B97D25;
+  
+  --color-status-green: #3B8459;
+  --color-status-amber: #D98F2E;
+  --color-status-red: #C4483A;
+  
+  --font-display: var(--font-barlow), sans-serif;
+  --font-sans: var(--font-plex-sans), sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+
+  /* Since v4 defaults transitions, we just need to extend durations */
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* Map motion scale */
+  /* duration-fast etc map nicely if we add custom utilities or override */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* In Tailwind v4, adding arbitrary duration variables inside @theme inline 
+   won't automatically generate utilities. Let's use @utility instead or just standard variables.
+   Let's add them as custom utilities to perfectly match the prompt. */
+@utility duration-fast { transition-duration: 120ms; }
+@utility duration-base { transition-duration: 200ms; }
+@utility duration-slow { transition-duration: 400ms; }
+@utility ease-out-custom { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-ink);
 }

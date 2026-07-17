@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { LogOut } from 'lucide-react'
+import { LogOut, Search } from 'lucide-react'
+import { CommandPalette } from '@/components/CommandPalette'
 
 export default async function DashboardLayout({
   children,
@@ -57,11 +58,16 @@ export default async function DashboardLayout({
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center text-sm text-steel bg-surface border border-steel-light rounded-md px-3 py-1.5 font-sans">
+                <Search className="w-4 h-4 mr-2" />
+                <span className="hidden md:inline">Search...</span>
+                <kbd className="ml-2 font-mono text-xs bg-card px-1.5 rounded border border-steel-light">⌘K</kbd>
+              </div>
               <span className="text-sm text-gray-500">
                 {(profile.businesses as any)?.name}
               </span>
               <form action={signOut}>
-                <button className="text-gray-500 hover:text-gray-700 flex items-center gap-2 text-sm font-medium">
+                <button className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors">
                   <LogOut size={16} />
                   Sign Out
                 </button>
@@ -73,6 +79,7 @@ export default async function DashboardLayout({
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+      <CommandPalette />
     </div>
   )
 }

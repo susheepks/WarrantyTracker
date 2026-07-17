@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Printer } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import QRCode from 'qrcode'
+import { PrintButton } from '@/components/equipment/PrintButton'
 
 export default async function EquipmentCardPage(props: { params: Promise<{ id: string }> }) {
   const resolvedParams = await props.params
@@ -18,21 +19,17 @@ export default async function EquipmentCardPage(props: { params: Promise<{ id: s
     return redirect('/dashboard/equipment')
   }
 
-  // Generate QR code pointing to the equipment's detail page
-  // We use a relative path but it will be resolved by the browser if scanned, 
-  // actually for QR codes we ideally want an absolute URL.
-  // Since we don't have the base URL easily here in RSC without headers, 
-  // we'll let the client component generate the absolute QR or just use the relative one.
-  // Actually, wait, let's just use the relative URL or pass it to a client component.
-  // For simplicity, we can get the host from headers.
-  
-  const headers = await import('next/headers')
-  const hostList = await headers.headers()
-  const host = hostList.get('host') || 'localhost:3000'
-  const protocol = host.includes('localhost') ? 'http' : 'https'
-  const fullUrl = `${protocol}://${host}/dashboard/equipment/${resolvedParams.id}`
-  
-  const qrCodeDataUrl = await QRCode.toDataURL(fullUrl, { width: 128, margin: 1 })
+  // Generate QR code containing the actual equipment details as plain text
+  // so it works entirely offline and without requiring authentication.
+  const qrPayload = `EQUIPMENT DETAILS
+Name: ${equipment.name}
+Category: ${equipment.category || 'N/A'}
+Model: ${equipment.model || 'N/A'}
+Serial: ${equipment.serial_number || 'N/A'}
+Provider: ${equipment.provider_name || 'N/A'}
+Phone: ${equipment.provider_phone || 'N/A'}`
+
+  const qrCodeDataUrl = await QRCode.toDataURL(qrPayload, { width: 128, margin: 1 })
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4 print:py-0 print:px-0">
@@ -40,12 +37,7 @@ export default async function EquipmentCardPage(props: { params: Promise<{ id: s
         <Link href={`/dashboard/equipment/${resolvedParams.id}`} className="text-blue-600 hover:underline flex items-center gap-1 text-sm">
           <ArrowLeft size={16} /> Back to Equipment
         </Link>
-        <button 
-          onClick={() => window.print()}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition-colors text-sm font-medium"
-        >
-          <Printer size={16} /> Print / Save PDF
-        </button>
+        <PrintButton />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm print:shadow-none print:border-0 print:p-0">

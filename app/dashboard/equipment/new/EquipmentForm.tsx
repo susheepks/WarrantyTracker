@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CheckSquare, Square, Camera, Loader2 } from 'lucide-react'
-import { createEquipment, extractEquipmentData } from '../actions'
+import { createEquipment, extractEquipmentData } from '@/lib/actions/equipment'
 
 type Template = {
   id: string

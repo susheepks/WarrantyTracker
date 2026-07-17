@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { generateAiClaim, submitClaim } from '../actions'
+import { generateAiClaim, submitClaim } from '@/lib/actions/claims'
 import { Loader2, Wand2 } from 'lucide-react'
 
 export default function ClaimForm({ claim }: { claim: any }) {

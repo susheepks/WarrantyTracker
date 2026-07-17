@@ -13,12 +13,16 @@
     "@google/generative-ai": "^0.24.1",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.2",
+    "cmdk": "^1.1.1",
+    "framer-motion": "^12.42.2",
+    "fuse.js": "^7.5.0",
     "lucide-react": "^1.24.0",
     "next": "16.2.10",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "resend": "^6.17.2"
+    "resend": "^6.17.2",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
