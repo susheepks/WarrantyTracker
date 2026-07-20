@@ -17,7 +17,7 @@ type SearchItem = {
   action?: () => void
 }
 
-export function CommandPalette() {
+export function CommandPalette({ businessId }: { businessId: string }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [items, setItems] = useState<SearchItem[]>([])
@@ -51,16 +51,10 @@ export function CommandPalette() {
       setLoading(false)
       return
     }
-    const { data: profile } = await supabase.from('profiles').select('business_id').eq('id', user.id).single()
-    if (!profile?.business_id) {
-      setLoading(false)
-      return
-    }
-
     const { data: equipment } = await supabase
       .from('equipment')
       .select('id, name, model, serial_number, category')
-      .eq('business_id', profile.business_id)
+      .eq('business_id', businessId)
       
     const { data: tasks } = await supabase
       .from('maintenance_schedules')
@@ -80,7 +74,7 @@ export function CommandPalette() {
           title: e.name,
           subtitle: `Equipment • ${e.model || ''} ${e.serial_number || ''}`,
           type: 'equipment',
-          href: `/dashboard/equipment/${e.id}`
+          href: `/dashboard/${businessId}/equipment/${e.id}`
         })
       })
     }
@@ -92,7 +86,7 @@ export function CommandPalette() {
           title: t.task_name,
           subtitle: `Task • ${(t.equipment as any)?.name || ''}`,
           type: 'task',
-          href: `/dashboard`
+          href: `/dashboard/${businessId}`
         })
       })
     }
@@ -104,7 +98,7 @@ export function CommandPalette() {
           title: `Claim for ${c.equipment_id}`,
           subtitle: `Status: ${c.status}`,
           type: 'claim',
-          href: `/dashboard/claims`
+          href: `/dashboard/${businessId}/claims`
         })
       })
     }
@@ -115,7 +109,7 @@ export function CommandPalette() {
       title: 'Add equipment',
       subtitle: 'Create a new equipment record',
       type: 'action',
-      href: '/dashboard/equipment/new'
+      href: `/dashboard/${businessId}/equipment/new`
     })
     
     setItems(loadedItems)

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import ClaimForm from './ClaimForm'
 
-export default async function ClaimDetailPage(props: { params: Promise<{ id: string }> }) {
+export default async function ClaimDetailPage(props: { params: Promise<{ id: string, businessId: string }> }) {
   const resolvedParams = await props.params
   const supabase = await createClient()
 
@@ -29,7 +29,7 @@ export default async function ClaimDetailPage(props: { params: Promise<{ id: str
     .single()
 
   if (!claim) {
-    return redirect('/dashboard/claims')
+    return redirect(`/dashboard/${resolvedParams.businessId}/claims`)
   }
 
   const eq = claim.equipment as any
@@ -37,7 +37,7 @@ export default async function ClaimDetailPage(props: { params: Promise<{ id: str
   return (
     <div className="max-w-4xl mx-auto pb-12">
       <div className="mb-6">
-        <Link href="/dashboard/claims" className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4">
+        <Link href={`/dashboard/${resolvedParams.businessId}/claims`} className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4">
           <ArrowLeft size={16} /> Back to Claims
         </Link>
         <h1 className="text-3xl font-bold text-gray-900">
@@ -81,7 +81,7 @@ export default async function ClaimDetailPage(props: { params: Promise<{ id: str
         </div>
         
         <div className="lg:col-span-2">
-          <ClaimForm claim={claim} />
+          <ClaimForm claim={claim} businessId={resolvedParams.businessId} />
         </div>
       </div>
     </div>

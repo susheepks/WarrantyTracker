@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { generateAiClaim, submitClaim } from '@/lib/actions/claims'
 import { Loader2, Wand2 } from 'lucide-react'
 
-export default function ClaimForm({ claim }: { claim: any }) {
+export default function ClaimForm({ claim, businessId }: { claim: any, businessId: string }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [draftText, setDraftText] = useState(claim.draft_text || '')
   
@@ -81,6 +81,7 @@ export default function ClaimForm({ claim }: { claim: any }) {
       {draftText && (
         <form action={submitClaim} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <input type="hidden" name="claim_id" value={claim.id} />
+          <input type="hidden" name="businessId" value={businessId} />
           
           <h2 className="text-lg font-semibold mb-2 text-gray-900">2. Review & Submit</h2>
           <p className="text-sm text-gray-500 mb-4">Review the AI-generated professional letter below. You can edit it before submitting.</p>

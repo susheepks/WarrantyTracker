@@ -17,7 +17,7 @@ export async function startClaim(equipmentId: string) {
       equipment_id: equipmentId,
       status: 'draft'
     })
-    .select('id')
+    .select('id, equipment!inner(business_id)')
     .single()
 
   if (error || !claim) {
@@ -25,7 +25,8 @@ export async function startClaim(equipmentId: string) {
     return
   }
 
-  redirect(`/dashboard/claims/${claim.id}`)
+  const businessId = (claim.equipment as any).business_id;
+  redirect(`/dashboard/${businessId}/claims/${claim.id}`)
 }
 
 export async function generateAiClaim(claimId: string, issueDescription: string) {
@@ -93,7 +94,8 @@ export async function generateAiClaim(claimId: string, issueDescription: string)
       })
       .eq('id', claimId)
 
-    revalidatePath(`/dashboard/claims/${claimId}`)
+    const businessId = (claim.equipment as any).businesses?.id || (claim.equipment as any).business_id;
+    revalidatePath(`/dashboard/${businessId}/claims/${claimId}`)
     return { success: true }
   } catch (err) {
     console.error('AI Error:', err)
@@ -104,6 +106,7 @@ export async function generateAiClaim(claimId: string, issueDescription: string)
 export async function submitClaim(formData: FormData) {
   const claimId = formData.get('claim_id') as string
   const draftText = formData.get('draft_text') as string
+  const businessId = formData.get('businessId') as string
   
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
@@ -134,5 +137,9 @@ export async function submitClaim(formData: FormData) {
     })
     .eq('id', claimId)
 
-  redirect('/dashboard/claims')
+  if (businessId) {
+    redirect(`/dashboard/${businessId}/claims`)
+  } else {
+    redirect('/dashboard') // fallback
+  }
 }

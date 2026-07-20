@@ -3,7 +3,10 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FileText, Clock, CheckCircle } from 'lucide-react'
 
-export default async function ClaimsPage() {
+export default async function ClaimsPage(props: { params: Promise<{ businessId: string }> }) {
+  const params = await props.params;
+  const businessId = params.businessId;
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return redirect('/login')
@@ -14,18 +17,20 @@ export default async function ClaimsPage() {
       id,
       status,
       submitted_at,
-      equipment (
+      equipment!inner (
         name,
-        serial_number
+        serial_number,
+        business_id
       )
     `)
+    .eq('equipment.business_id', businessId)
     .order('submitted_at', { ascending: false })
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
       <div className="mb-8 flex items-center justify-between border-b border-gray-200 pb-5">
         <h1 className="text-3xl font-bold text-gray-900">Warranty Claims</h1>
-        <Link href="/dashboard/equipment" className="px-4 py-2 bg-blue-50 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-100 transition-colors">
+        <Link href={`/dashboard/${businessId}/equipment`} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-md text-sm font-medium hover:bg-blue-100 transition-colors">
           View Equipment
         </Link>
       </div>
@@ -35,7 +40,7 @@ export default async function ClaimsPage() {
           <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-1">No claims filed yet</h3>
           <p className="text-gray-500 max-w-sm mx-auto mb-6">You can start a warranty claim directly from any active equipment's detail page.</p>
-          <Link href="/dashboard/equipment" className="px-5 py-2.5 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors">
+          <Link href={`/dashboard/${businessId}/equipment`} className="px-5 py-2.5 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors">
             Browse Equipment
           </Link>
         </div>
@@ -44,7 +49,7 @@ export default async function ClaimsPage() {
           <ul className="divide-y divide-gray-200">
             {claims.map((claim) => (
               <li key={claim.id}>
-                <Link href={`/dashboard/claims/${claim.id}`} className="block hover:bg-gray-50 transition-colors">
+                <Link href={`/dashboard/${businessId}/claims/${claim.id}`} className="block hover:bg-gray-50 transition-colors">
                   <div className="px-6 py-5 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className={`p-3 rounded-full ${claim.status === 'draft' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
