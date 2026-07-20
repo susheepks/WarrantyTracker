@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import EquipmentForm from './EquipmentForm'
 
-export default async function NewEquipmentPage() {
+export default async function NewEquipmentPage(props: { params: Promise<{ businessId: string }> }) {
+  const params = await props.params;
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -12,5 +13,5 @@ export default async function NewEquipmentPage() {
     .from('maintenance_templates')
     .select('*')
 
-  return <EquipmentForm templates={templates || []} />
+  return <EquipmentForm templates={templates || []} businessId={params.businessId} />
 }

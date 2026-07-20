@@ -12,15 +12,22 @@ type Template = {
   frequency_days: number
 }
 
-export default function EquipmentForm({ templates }: { templates: Template[] }) {
+export default function EquipmentForm({ templates, businessId }: { templates: Template[], businessId: string }) {
   const [category, setCategory] = useState('')
   const [suggestedTasks, setSuggestedTasks] = useState<Template[]>([])
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set())
   const [isExtracting, setIsExtracting] = useState(false)
+  const [showWarrantyPrompt, setShowWarrantyPrompt] = useState(false)
+  const [warrantySource, setWarrantySource] = useState<'manual' | 'extracted'>('manual')
 
   const nameRef = useRef<HTMLInputElement>(null)
   const modelRef = useRef<HTMLInputElement>(null)
   const serialRef = useRef<HTMLInputElement>(null)
+  const purchasePlatformRef = useRef<HTMLInputElement>(null)
+  const retailerRef = useRef<HTMLInputElement>(null)
+  const priceRef = useRef<HTMLInputElement>(null)
+  const purchaseDateRef = useRef<HTMLInputElement>(null)
+  const warrantyMonthsRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Categories present in templates
@@ -58,6 +65,19 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
         if (nameRef.current && result.data.name) nameRef.current.value = result.data.name
         if (modelRef.current && result.data.model) modelRef.current.value = result.data.model
         if (serialRef.current && result.data.serial_number) serialRef.current.value = result.data.serial_number
+        if (purchasePlatformRef.current && result.data.purchase_platform) purchasePlatformRef.current.value = result.data.purchase_platform
+        if (retailerRef.current && result.data.retailer) retailerRef.current.value = result.data.retailer
+        if (priceRef.current && result.data.price) priceRef.current.value = result.data.price
+        if (purchaseDateRef.current && result.data.purchase_date) purchaseDateRef.current.value = result.data.purchase_date
+        
+        if (result.data.warranty_months !== null && result.data.warranty_months !== undefined) {
+          if (warrantyMonthsRef.current) warrantyMonthsRef.current.value = result.data.warranty_months
+          setWarrantySource('extracted')
+          setShowWarrantyPrompt(false)
+        } else {
+          setWarrantySource('manual')
+          setShowWarrantyPrompt(true)
+        }
       } else {
         alert('Could not extract details. Please enter manually.')
       }
@@ -73,7 +93,7 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
   return (
     <div className="max-w-2xl mx-auto pb-12">
       <div className="mb-6">
-        <Link href="/dashboard/equipment" className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4">
+        <Link href={`/dashboard/${businessId}/equipment`} className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4">
           <ArrowLeft size={16} /> Back to Equipment
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -82,7 +102,7 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
           <div>
             <input 
               type="file" 
-              accept="image/*" 
+              accept="image/*,application/pdf" 
               className="hidden" 
               ref={fileInputRef} 
               onChange={handlePhotoUpload} 
@@ -94,7 +114,7 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
               className="flex items-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-200 px-4 py-2 rounded-md hover:bg-indigo-100 transition-colors text-sm font-medium disabled:opacity-50"
             >
               {isExtracting ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
-              {isExtracting ? 'Analyzing...' : 'Scan Nameplate Photo'}
+              {isExtracting ? 'Analyzing...' : 'Upload Document or Photo'}
             </button>
           </div>
         </div>
@@ -128,32 +148,79 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Serial Number / Order No.</label>
             <input ref={serialRef} name="serial_number" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date</label>
-            <input type="date" name="purchase_date" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" />
+            <input ref={purchaseDateRef} type="date" name="purchase_date" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Platform</label>
+            <input ref={purchasePlatformRef} name="purchase_platform" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. Amazon, BestBuy" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Retailer / Vendor</label>
-            <input name="retailer" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" />
+            <input ref={retailerRef} name="retailer" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Price</label>
-            <input type="number" step="0.01" name="price" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="0.00" />
+            <input ref={priceRef} type="number" step="0.01" name="price" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="0.00" />
           </div>
 
-          <div>
+          <div className="col-span-full">
             <label className="block text-sm font-medium text-gray-700 mb-1">Warranty Length (Months)</label>
-            <input type="number" name="warranty_months" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. 12" />
+            
+            {showWarrantyPrompt && (
+              <div className="mb-3 p-4 bg-blue-50 border border-blue-100 rounded-md">
+                <p className="text-sm text-blue-800 mb-2 font-medium">This document doesn't show a warranty period — enter one manually, or skip if you're not sure.</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: '30 Days', val: 1 },
+                    { label: '90 Days', val: 3 },
+                    { label: '1 Year', val: 12 },
+                    { label: '2 Years', val: 24 },
+                    { label: 'No Warranty', val: 0 }
+                  ].map(preset => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        if (warrantyMonthsRef.current) warrantyMonthsRef.current.value = preset.val.toString()
+                        setWarrantySource('manual')
+                        setShowWarrantyPrompt(false)
+                      }}
+                      className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded text-xs hover:bg-blue-50 transition-colors"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (warrantyMonthsRef.current) warrantyMonthsRef.current.value = ''
+                      setWarrantySource('manual')
+                      setShowWarrantyPrompt(false)
+                    }}
+                    className="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded text-xs hover:bg-gray-50 transition-colors ml-auto"
+                  >
+                    Skip
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            <input ref={warrantyMonthsRef} type="number" name="warranty_months" className="w-full md:w-1/2 rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. 12" />
+            <input type="hidden" name="warranty_source" value={warrantySource} />
+            <input type="hidden" name="businessId" value={businessId} />
           </div>
         </div>
 
-        {suggestedTasks.length > 0 && (
+        {suggestedTasks.length > 0 ? (
           <div className="pt-6 border-t border-gray-100">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Suggested Maintenance Tasks</h3>
             <p className="text-xs text-gray-500 mb-4">We found typical maintenance tasks for {category}. Uncheck any you don't want to track.</p>
@@ -180,10 +247,16 @@ export default function EquipmentForm({ templates }: { templates: Template[] }) 
               })}
             </div>
           </div>
-        )}
+        ) : category ? (
+          <div className="pt-6 border-t border-gray-100">
+            <div className="p-4 bg-gray-50 border border-gray-100 rounded-lg text-center">
+              <p className="text-sm text-gray-600">No maintenance tracked for this item — just here for warranty and receipt safekeeping.</p>
+            </div>
+          </div>
+        ) : null}
 
         <div className="pt-6 border-t border-gray-100 flex justify-end gap-3">
-          <Link href="/dashboard/equipment" className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+          <Link href={`/dashboard/${businessId}/equipment`} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
             Cancel
           </Link>
           <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { EquipmentTimelineClient } from '@/components/equipment/EquipmentTimelineClient'
 
-export default async function EquipmentDetailPage(props: { params: Promise<{ id: string }> }) {
+export default async function EquipmentDetailPage(props: { params: Promise<{ id: string, businessId: string }> }) {
   const resolvedParams = await props.params
   const supabase = await createClient()
 
@@ -15,7 +15,7 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
     .single()
 
   if (!equipment) {
-    return redirect('/dashboard/equipment')
+    return redirect(`/dashboard/${resolvedParams.businessId}/equipment`)
   }
 
   const { data: healthData } = await supabase
@@ -33,7 +33,7 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
     'use server'
     const supabase = await createClient()
     await supabase.from('equipment').delete().eq('id', resolvedParams.id)
-    redirect('/dashboard/equipment')
+    redirect(`/dashboard/${resolvedParams.businessId}/equipment`)
   }
 
   const handleStartClaim = async () => {
@@ -94,7 +94,7 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
     <div className="max-w-4xl mx-auto pb-12">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <Link href="/dashboard/equipment" className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4 font-sans">
+          <Link href={`/dashboard/${resolvedParams.businessId}/equipment`} className="text-blue-600 hover:underline flex items-center gap-1 text-sm mb-4 font-sans">
             <ArrowLeft size={16} /> Back to Equipment
           </Link>
           <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link 
-            href={`/dashboard/equipment/${resolvedParams.id}/card`}
+            href={`/dashboard/${resolvedParams.businessId}/equipment/${resolvedParams.id}/card`}
             className="flex items-center gap-1 px-4 py-2 bg-ink text-white rounded-md hover:bg-ink/90 transition-transform duration-fast active:scale-[0.97] text-sm font-medium font-sans"
           >
             View Emergency Card
@@ -135,12 +135,16 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
             <dd className="mt-1 font-mono text-ink">{equipment.model || '—'}</dd>
           </div>
           <div>
-            <dt className="text-sm font-medium font-sans text-steel">Serial Number</dt>
+            <dt className="text-sm font-medium font-sans text-steel">Serial Number / Order No.</dt>
             <dd className="mt-1 font-mono text-ink">{equipment.serial_number || '—'}</dd>
           </div>
           <div>
             <dt className="text-sm font-medium font-sans text-steel">Purchase Date</dt>
             <dd className="mt-1 font-mono text-ink">{equipment.purchase_date ? new Date(equipment.purchase_date).toLocaleDateString() : '—'}</dd>
+          </div>
+          <div>
+            <dt className="text-sm font-medium font-sans text-steel">Purchase Platform</dt>
+            <dd className="mt-1 font-sans text-ink">{equipment.purchase_platform || '—'}</dd>
           </div>
           <div>
             <dt className="text-sm font-medium font-sans text-steel">Retailer</dt>
@@ -154,7 +158,15 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
       </div>
 
       <div className="bg-card border border-steel-light rounded-lg p-6 shadow-sm mt-6">
-        <h2 className="text-lg font-semibold font-display mb-4 border-b border-steel-light pb-2 text-ink">Warranty Information</h2>
+        <div className="flex items-center gap-2 mb-4 border-b border-steel-light pb-2">
+          <h2 className="text-lg font-semibold font-display text-ink">Warranty Information</h2>
+          {equipment.warranty_source === 'extracted' && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-200">From Receipt</span>
+          )}
+          {equipment.warranty_source === 'manual' && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-50 text-gray-600 border border-gray-200">Manually Set</span>
+          )}
+        </div>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
           <div>
             <dt className="text-sm font-medium font-sans text-steel">Warranty Length</dt>

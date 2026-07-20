@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import QRCode from 'qrcode'
 import { PrintButton } from '@/components/equipment/PrintButton'
 
-export default async function EquipmentCardPage(props: { params: Promise<{ id: string }> }) {
+export default async function EquipmentCardPage(props: { params: Promise<{ id: string, businessId: string }> }) {
   const resolvedParams = await props.params
   const supabase = await createClient()
 
@@ -16,7 +16,7 @@ export default async function EquipmentCardPage(props: { params: Promise<{ id: s
     .single()
 
   if (!equipment) {
-    return redirect('/dashboard/equipment')
+    return redirect(`/dashboard/${resolvedParams.businessId}/equipment`)
   }
 
   // Generate QR code containing the actual equipment details as plain text
@@ -34,7 +34,7 @@ Phone: ${equipment.provider_phone || 'N/A'}`
   return (
     <div className="max-w-2xl mx-auto py-8 px-4 print:py-0 print:px-0">
       <div className="mb-6 flex justify-between items-center print:hidden">
-        <Link href={`/dashboard/equipment/${resolvedParams.id}`} className="text-blue-600 hover:underline flex items-center gap-1 text-sm">
+        <Link href={`/dashboard/${resolvedParams.businessId}/equipment/${resolvedParams.id}`} className="text-blue-600 hover:underline flex items-center gap-1 text-sm">
           <ArrowLeft size={16} /> Back to Equipment
         </Link>
         <PrintButton />
@@ -61,7 +61,7 @@ Phone: ${equipment.provider_phone || 'N/A'}`
                 <p className="font-semibold text-gray-900">{equipment.model || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Serial Number</p>
+                <p className="text-sm text-gray-500">Serial Number / Order No.</p>
                 <p className="font-semibold text-gray-900">{equipment.serial_number || 'N/A'}</p>
               </div>
             </div>
