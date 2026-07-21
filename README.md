@@ -1,28 +1,4 @@
-﻿<h1 align="center">
-  <br />
-  🛠️ EquipTracker
-  <br />
-</h1>
-
-<p align="center">
-  <strong>Equipment Uptime &amp; Warranty Management for Modern Businesses</strong>
-</p>
-
-<p align="center">
-  A full-stack Progressive Web App (PWA) that helps businesses centralize all their equipment records, track warranties, schedule maintenance, and file AI-assisted warranty claims — all in one place.
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16.2-black?logo=next.js" alt="Next.js" />
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" alt="React" />
-  <img src="https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?logo=supabase" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Gemini%202.5%20Flash-AI-4285F4?logo=google" alt="Gemini AI" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/TailwindCSS-4-06B6D4?logo=tailwindcss" alt="Tailwind" />
-</p>
-
----
-
+﻿
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
@@ -309,10 +285,3 @@ The recommended deployment target is **Vercel**:
 3. Add all environment variables from `.env.local` in the Vercel project settings.
 4. Deploy — Vercel handles the Next.js build and serverless functions automatically.
 
-> For the PWA service worker and caching to activate, you must deploy a **production build**.
-
----
-
-<p align="center">
-  Built with ❤️ by <a href="https://github.com/susheepks">Susheep K S</a>
-</p>

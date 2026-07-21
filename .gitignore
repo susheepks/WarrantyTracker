@@ -39,7 +39,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-AGENTS.md
-CLAUDE.md
-GEMINI.md
-OPENAI.md
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/OPENAI.md
+/understand about project
+
