@@ -67,6 +67,7 @@ export async function createEquipment(formData: FormData) {
   const warranty_monthsStr = formData.get('warranty_months') as string
   const purchase_platform = formData.get('purchase_platform') as string
   const warranty_source = formData.get('warranty_source') as string
+  const location_id = formData.get('location_id') as string
 
   if (!name) return
 
@@ -135,7 +136,8 @@ export async function createEquipment(formData: FormData) {
       warranty_end_date,
       purchase_platform,
       warranty_source,
-      platform_id
+      platform_id,
+      location_id: location_id || null
     })
     .select()
     .single()

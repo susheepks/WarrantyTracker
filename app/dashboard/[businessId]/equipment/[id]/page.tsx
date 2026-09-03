@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import { EquipmentTimelineClient } from '@/components/equipment/EquipmentTimelineClient'
+import { DocumentVault } from '@/components/equipment/DocumentVault'
 
 export default async function EquipmentDetailPage(props: { params: Promise<{ id: string, businessId: string }> }) {
   const resolvedParams = await props.params
@@ -23,6 +24,12 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
     .select('health_score')
     .eq('equipment_id', resolvedParams.id)
     .single()
+
+  const { data: documents } = await supabase
+    .from('equipment_documents')
+    .select('*')
+    .eq('equipment_id', resolvedParams.id)
+    .order('created_at', { ascending: false })
 
   const healthScore = healthData?.health_score ?? 100
   let badgeColor = 'bg-status-green/10 text-status-green border-status-green/20'
@@ -178,6 +185,12 @@ export default async function EquipmentDetailPage(props: { params: Promise<{ id:
           </div>
         </dl>
       </div>
+
+      <DocumentVault 
+        businessId={resolvedParams.businessId} 
+        equipmentId={resolvedParams.id} 
+        documents={documents || []} 
+      />
 
       <EquipmentTimelineClient items={timeline} />
     </div>

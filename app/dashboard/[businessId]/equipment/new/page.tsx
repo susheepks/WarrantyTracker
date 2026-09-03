@@ -13,5 +13,10 @@ export default async function NewEquipmentPage(props: { params: Promise<{ busine
     .from('maintenance_templates')
     .select('*')
 
-  return <EquipmentForm templates={templates || []} businessId={params.businessId} />
+  const { data: locations } = await supabase
+    .from('locations')
+    .select('*')
+    .eq('business_id', params.businessId)
+
+  return <EquipmentForm templates={templates || []} locations={locations || []} businessId={params.businessId} />
 }

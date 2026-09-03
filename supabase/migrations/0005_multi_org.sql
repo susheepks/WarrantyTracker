@@ -1,8 +1,3 @@
--- ============================================================
--- MULTI-ORG MIGRATION
--- Run this in the Supabase SQL Editor
--- Safe to run even if some parts already exist (uses IF NOT EXISTS)
--- ============================================================
 
 -- STEP 1: Create the memberships table
 create table if not exists memberships (
