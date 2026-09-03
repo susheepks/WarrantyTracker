@@ -12,7 +12,12 @@ type Template = {
   frequency_days: number
 }
 
-export default function EquipmentForm({ templates, businessId }: { templates: Template[], businessId: string }) {
+type Location = {
+  id: string
+  name: string
+}
+
+export default function EquipmentForm({ templates, locations, businessId }: { templates: Template[], locations: Location[], businessId: string }) {
   const [category, setCategory] = useState('')
   const [suggestedTasks, setSuggestedTasks] = useState<Template[]>([])
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set())
@@ -125,6 +130,16 @@ export default function EquipmentForm({ templates, businessId }: { templates: Te
           <div className="col-span-full">
             <label className="block text-sm font-medium text-gray-700 mb-1">Equipment Name *</label>
             <input ref={nameRef} name="name" required className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900" placeholder="e.g. Commercial Fryer" />
+          </div>
+
+          <div className="col-span-full">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <select name="location_id" className="w-full rounded-md border border-gray-300 px-3 py-2 bg-inherit text-gray-900">
+              <option value="">No Location Assigned</option>
+              {locations.map(loc => (
+                <option key={loc.id} value={loc.id}>{loc.name}</option>
+              ))}
+            </select>
           </div>
           
           <div>

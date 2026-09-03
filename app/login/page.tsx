@@ -27,7 +27,8 @@ export default async function LoginPage(props: {
     })
 
     if (error) {
-      return redirect('/login?error=Could not authenticate user')
+      console.error('Sign in error:', error)
+      return redirect('/login?error=' + encodeURIComponent(error.message || 'Could not authenticate user'))
     }
 
     return redirect('/login?message=Check email to continue sign in process')

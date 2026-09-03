@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Calendar, Settings, Grid2x2, List, Search, Layers, ChevronDown } from 'lucide-react'
+import { Calendar, Settings, Grid2x2, List, Search, Layers, ChevronDown, Download, Upload } from 'lucide-react'
 import Fuse from 'fuse.js'
+import Papa from 'papaparse'
 import { motion, useReducedMotion } from 'framer-motion'
 import { PlatformIcon } from '@/components/ui/PlatformIcon'
+import { CsvImportModal } from './CsvImportModal'
 
 type Equipment = {
   id: string
@@ -14,6 +16,7 @@ type Equipment = {
   category: string | null
   purchase_date: string | null
   model: string | null
+  serial_number?: string | null
   price: number | null
   business_id: string
   created_at: string
@@ -31,6 +34,7 @@ export function EquipmentListClient({ initialEquipment, businessId }: { initialE
   const [groupSort, setGroupSort] = useState<'alpha' | 'count'>('alpha')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all')
+  const [showImportModal, setShowImportModal] = useState(false)
   const shouldReduceMotion = useReducedMotion()
 
   const fuse = new Fuse(initialEquipment, {
@@ -79,6 +83,31 @@ export function EquipmentListClient({ initialEquipment, businessId }: { initialE
     if (diffDays < 0) return 0
     if (diffDays > 365) return 100
     return Math.round((diffDays / 365) * 100)
+  }
+
+  const exportToCsv = () => {
+    const csvData = filteredResults.map(item => ({
+      name: item.name,
+      category: item.category || '',
+      model: item.model || '',
+      serial_number: item.serial_number || '',
+      purchase_date: item.purchase_date || '',
+      purchase_platform: item.platforms?.name || item.purchase_platform || '',
+      price: item.price || '',
+      warranty_end_date: item.warranty_end_date || ''
+    }))
+
+    const csv = Papa.unparse(csvData)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'equipment_export.csv')
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const renderEquipmentCard = (item: Equipment) => {
@@ -300,10 +329,35 @@ export function EquipmentListClient({ initialEquipment, businessId }: { initialE
               <List size={16} />
             </button>
           </div>
+
+          <div className="h-6 w-px bg-steel-light hidden sm:block" />
+
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-white border border-steel-light text-sm font-medium text-ink hover:bg-surface transition-colors"
+          >
+            <Upload size={16} />
+            <span className="hidden sm:inline">Import</span>
+          </button>
+          
+          <button
+            onClick={exportToCsv}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-white border border-steel-light text-sm font-medium text-ink hover:bg-surface transition-colors"
+          >
+            <Download size={16} />
+            <span className="hidden sm:inline">Export</span>
+          </button>
         </div>
       </div>
 
       {content}
+      
+      {showImportModal && (
+        <CsvImportModal 
+          businessId={businessId} 
+          onClose={() => setShowImportModal(false)} 
+        />
+      )}
     </div>
   )
 }

@@ -71,6 +71,9 @@ export default async function DashboardLayout(props: {
                 <Link href={`/dashboard/${businessId}/claims`} className="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
                   Claims
                 </Link>
+                <Link href={`/dashboard/${businessId}/locations`} className="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                  Locations
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-4">

@@ -44,11 +44,24 @@ export default async function DashboardPage(props: { params: Promise<{ businessI
 
   let protectedValue = 0
   let expiredValue = 0
+  let expiringSoonCount = 0
 
   if (equipmentStats) {
     equipmentStats.forEach(eq => {
-      if (eq.warranty_end_date && new Date(eq.warranty_end_date) >= today) {
-        protectedValue += eq.price || 0
+      if (eq.warranty_end_date) {
+        const endDate = new Date(eq.warranty_end_date)
+        if (endDate >= today) {
+          protectedValue += eq.price || 0
+          
+          // Check if expiring in next 30 days
+          const diffTime = endDate.getTime() - today.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          if (diffDays <= 30) {
+            expiringSoonCount++
+          }
+        } else {
+          expiredValue += eq.price || 0
+        }
       } else {
         expiredValue += eq.price || 0
       }
@@ -99,6 +112,14 @@ export default async function DashboardPage(props: { params: Promise<{ businessI
             <span className="text-3xl font-bold text-gray-900">₹ {expiredValue.toLocaleString()}</span>
           </div>
           <p className="text-xs text-amber-600 font-medium mt-2">Consider service plans</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm sm:col-span-2 lg:col-span-1">
+          <h3 className="text-sm font-medium text-gray-500 mb-1">Expiring in 30 Days</h3>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-gray-900">{expiringSoonCount}</span>
+            <span className="text-sm text-gray-500">items</span>
+          </div>
+          <p className="text-xs text-blue-600 font-medium mt-2">Time to file claims!</p>
         </div>
       </div>
 
